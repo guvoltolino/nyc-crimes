@@ -75,7 +75,7 @@ df_clean = df_clean \
     .withColumnRenamed("susp_sex", "suspect_sex") \
     .withColumnRenamed("crm_atpt_cptd_cd", "crime_status") \
     .withColumnRenamed("prem_typ_desc", "premises_type_description") \
-    .withColumnRenamed("rpt_dt", "report_date")
+    .withColumnRenamed("rpt_dt", "report_date").distinct()
 
 # COMMAND ----------
 
@@ -90,6 +90,10 @@ df_clean = df_clean.withColumn("start_date", to_date(col("start_date").substr(1,
                    .withColumn("end_date", when(col("end_date").isNull(), lit("UNKNOWN")).otherwise(col("end_date"))) \
                    .withColumn("report_date", when(col("report_date").isNull(), lit("UNKNOWN")).otherwise(col("report_date")))
 
+
+# COMMAND ----------
+
+df_clean = df_clean.filter(col("start_date") >= "2019-01-01")
 
 # COMMAND ----------
 
@@ -134,6 +138,10 @@ df_clean = df_clean \
     .withColumn(
         "premises_type_description",
         when(col("premises_type_description") == "(null)", lit("UNKNOWN")).otherwise(col("premises_type_description"))
+    ) \
+    .withColumn(
+        "borough_name",
+        when(col("borough_name") == "(null)", lit("UNKNOWN")).otherwise(col("borough_name"))
     )
 
 # COMMAND ----------

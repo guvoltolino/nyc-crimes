@@ -1,0 +1,82 @@
+{
+	"name": "pipeline",
+	"properties": {
+		"activities": [
+			{
+				"name": "extract data from api",
+				"type": "DatabricksNotebook",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"notebookPath": "/Users/gsvoltolino@uniara.edu.br/nyc-crimes/Databricks/bronze"
+				},
+				"linkedServiceName": {
+					"referenceName": "AzureDatabricks24",
+					"type": "LinkedServiceReference"
+				}
+			},
+			{
+				"name": "data transformation silver layer",
+				"type": "DatabricksNotebook",
+				"dependsOn": [
+					{
+						"activity": "extract data from api",
+						"dependencyConditions": [
+							"Completed"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"notebookPath": "/Workspace/Users/gsvoltolino@uniara.edu.br/nyc-crimes/Databricks/prata"
+				},
+				"linkedServiceName": {
+					"referenceName": "AzureDatabricks24",
+					"type": "LinkedServiceReference"
+				}
+			},
+			{
+				"name": "gold layer transformation",
+				"type": "DatabricksNotebook",
+				"dependsOn": [
+					{
+						"activity": "data transformation silver layer",
+						"dependencyConditions": [
+							"Completed"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"notebookPath": "/Workspace/Users/gsvoltolino@uniara.edu.br/nyc-crimes/Databricks/ouro"
+				},
+				"linkedServiceName": {
+					"referenceName": "AzureDatabricks24",
+					"type": "LinkedServiceReference"
+				}
+			}
+		],
+		"annotations": []
+	}
+}

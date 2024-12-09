@@ -1,5 +1,5 @@
 {
-	"name": "pipeline",
+	"name": "transformations",
 	"properties": {
 		"activities": [
 			{
@@ -74,6 +74,29 @@
 				"linkedServiceName": {
 					"referenceName": "AzureDatabricks24",
 					"type": "LinkedServiceReference"
+				}
+			},
+			{
+				"name": "Execute Pipeline1",
+				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "gold layer transformation",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "pipeline1",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true
 				}
 			}
 		],

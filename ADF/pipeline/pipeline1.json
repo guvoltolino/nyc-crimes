@@ -1,0 +1,134 @@
+{
+	"name": "pipeline1",
+	"properties": {
+		"activities": [
+			{
+				"name": "Get ClientId",
+				"type": "WebActivity",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"method": "GET",
+					"url": "https://nyccrimes.vault.azure.net/secrets/clienteId1/7f95d3c41a144dc196c7a2fcdd13bfa3?api-version=7.0",
+					"authentication": {
+						"type": "MSI",
+						"resource": "https://vault.azure.net"
+					}
+				}
+			},
+			{
+				"name": "Get SecretId",
+				"type": "WebActivity",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"method": "GET",
+					"url": "https://nyccrimes.vault.azure.net/secrets/value1/7d44f0d1883d41f1858be1e32e3a6538?api-version=7.0",
+					"authentication": {
+						"type": "MSI",
+						"resource": "https://vault.azure.net"
+					}
+				}
+			},
+			{
+				"name": "Get Bearer Token",
+				"type": "WebActivity",
+				"dependsOn": [
+					{
+						"activity": "Get ClientId",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					},
+					{
+						"activity": "Get SecretId",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"method": "POST",
+					"headers": {
+						"Content-Type": "application/x-www-form-urlencoded",
+						"Cookie": "fpc=Aiu1F41MFJxIjZNYWC_BNN7ncEI6AQAAAH3FNtsOAAAA; stsservicecookie=estsfd; x-ms-gateway-slice=estsfd"
+					},
+					"url": "https://login.microsoftonline.com/b6da6400-c0a3-4462-aa15-299b9d055deb/oauth2/v2.0/token",
+					"body": {
+						"value": "@concat(\n    'grant_type=client_credentials&client_id=', \n   activity('Get ClientId').output.value,\n   '&client_secret=', activity('Get SecretId').output.value,\n   '&scope=https://analysis.windows.net/powerbi/api/.default'\n)",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "Refresh Power BI",
+				"type": "WebActivity",
+				"dependsOn": [
+					{
+						"activity": "Get Bearer Token",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"method": "POST",
+					"headers": {
+						"Content-Type": "application/json",
+						"Authorization": {
+							"value": "@concat(\r\n    'Bearer', activity('Get Bearer Token').output['access_token']\r\n)",
+							"type": "Expression"
+						}
+					},
+					"url": "https://app.powerbi.com/groups/4df3ec5d-7237-4ab4-96be-a3cc28667e53/datasets/3f75c03a-88b0-4ae9-9289-068610751549/",
+					"body": "{“type”:”full”,”commitMode”:”transactional”,”applyRefreshPolicy”:”false”}"
+				}
+			}
+		],
+		"variables": {
+			"PipelineName": {
+				"type": "String"
+			},
+			"TriggerTime": {
+				"type": "String"
+			},
+			"w": {
+				"type": "Array"
+			},
+			"teste": {
+				"type": "String"
+			}
+		},
+		"annotations": []
+	}
+}
